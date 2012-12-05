@@ -152,3 +152,13 @@ LOGGING = {
 
 import dj_database_url
 DATABASES['default'] = dj_database_url.config()
+
+LOCAL_SETTINGS_FILE = "local_settings.py"
+
+try:
+    LOCAL_SETTINGS
+except NameError:
+    try:
+        from local_settings import *
+    except ImportError:
+        pass
