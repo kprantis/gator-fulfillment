@@ -6,7 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from orders.models import InventoryItem, InventoryItemLink
+from inventory.models import InventoryItem, InventoryItemLink
 
 
 class InventoryModelTest(TestCase):
