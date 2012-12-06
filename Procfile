@@ -1,1 +1,1 @@
-web: gunicorn gator_fulfillment.wsgi
+web: python manage.py collectstatic --noinput; gunicorn gator_fulfillment.wsgi
