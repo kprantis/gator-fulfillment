@@ -14,7 +14,7 @@
 
 {% if app_list %}
     {% for app in app_list reversed %}
-        {% if app.name == 'Inventory' or app.name == 'Auth' %}
+        {% if app.name == 'Inventory' or app.name == 'Auth' or app.name == 'Orders' %}
             <div class="module">
             <table summary="{% blocktrans with name=app.name %}Models available in the {{ name }} application.{% endblocktrans %}">
             <caption><a href="{{ app.app_url }}" class="section">{% blocktrans with name=app.name %}{{ name }}{% endblocktrans %}</a></caption>

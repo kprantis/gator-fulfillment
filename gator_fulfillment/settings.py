@@ -128,6 +128,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'south',
     'inventory',
+    'orders',
 )
 
 # A sample logging configuration. The only tangible logging
