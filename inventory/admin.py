@@ -8,7 +8,7 @@ class InventoryItemLinkInline(admin.StackedInline):
 
 class InventoryItemAdmin(admin.ModelAdmin):
     inlines = [InventoryItemLinkInline]
-    list_display = ('name', 'orderable')
-    search_fields = ['name']
+    list_display = ('name', 'description', 'orderable')
+    search_fields = ['name', 'description']
 
 admin.site.register(InventoryItem, InventoryItemAdmin)

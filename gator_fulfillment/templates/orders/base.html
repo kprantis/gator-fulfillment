@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block css %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/base_styles.css" />
+    {% endblock %}
+    <title>{% block title %}Gator Fulfillment{% endblock %}</title>
+</head>
+
+<body>
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

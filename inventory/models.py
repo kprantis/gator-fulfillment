@@ -28,7 +28,10 @@ class InventoryItem(models.Model):
     )
 
     def __unicode__(self):
-        return self.name
+        return "%s%s" % (
+            self.name, 
+            " (%s)" % self.description if self.description else ''
+        )
 
 class InventoryItemLink(models.Model):
     """
@@ -53,5 +56,20 @@ class InventoryItemLink(models.Model):
             self.num_child_inventory_items_required,
             self.child_inventory_item,
             's' if self.num_child_inventory_items_required > 1 else '',
-            self.description
+            self.relationship
+        )
+
+class Label(object):
+    """
+    Container for the data necessary for a print label to be packaged
+    along with an inventory item.
+    """
+    def __init__(self, inventory_item, quantity, relationship):
+        self.name = inventory_item.name
+        self.description = inventory_item.description
+        self.image_url = inventory_item.image_url
+        self.relationship = relationship
+        self.quantity = "%s of %s" % (
+            inventory_item.container_type,
+            quantity
         )

@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 from django.template import Context, loader
 
 from orders.models import Order
@@ -9,9 +9,7 @@ def label(request, order_id):
     with a order.
     """
     order = Order.objects.get(pk=order_id)
+    labels = order.generate_labels()
 
-    template = loader.get_template('orders/label.html')
-    context = Context({
-        'order' : order
-    })
-    return HttpResponse(template.render(context))
+    context = {'labels' : labels}
+    return render(request, 'orders/label.html', context)
