@@ -64,7 +64,7 @@ class Label(object):
     Container for the data necessary for a print label to be packaged
     along with an inventory item.
     """
-    def __init__(self, inventory_item, quantity, relationship):
+    def __init__(self, inventory_item, relationship, quantity):
         self.name = inventory_item.name
         self.description = inventory_item.description
         self.image_url = inventory_item.image_url

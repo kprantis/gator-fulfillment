@@ -9,52 +9,81 @@ class Order(models.Model):
         return self.description
 
     def generate_labels(self):
+        """
+        Generates a alpabetically sorted list of labels for each item
+        that is required for this order, including all child items.
+        """
+        items_for_order = self._generate_items_for_order()
         labels = []
+        for item, relationship_to_quantity_mapping in items_for_order.iteritems():
+            for relationship, quantity in relationship_to_quantity_mapping.iteritems():
+                while quantity > 0:
+                    label_quantity = min(quantity, item.max_per_container)
+                    labels.append(Label(item, relationship, label_quantity))
+                    quantity -= label_quantity
+
+        labels = sorted(labels, key=lambda label: label.name)
+        return labels
+        
+    def _generate_items_for_order(self):
+        """
+        Will generate a dict with totals of all items required for the
+        order, refined by the relationship. The resulting dict format is:
+            
+        items_for_order = {
+                item1: {
+                    relationshipA: quantity,
+                    relationshipB: quantity
+                },
+                item2: {
+                    relationshipC: quantity,
+                    relationshipD: quantity
+                }
+            }
+        """
+        items_for_order = {}
         for order_item in self.orderitem_set.all():
             inventory_item = order_item.inventory_item
-            labels.extend(
-                self.generate_labels_for_quantity(
-                    inventory_item,
-                    order_item.quantity,
-                    relationship = None
-                )
-            )
-            labels.extend(
-                self.generate_labels_for_children(inventory_item)
+            if not inventory_item in items_for_order.keys():
+                items_for_order[inventory_item] = {
+                    '': order_item.quantity
+                }
+            else:
+                items_for_order[inventory_item][''] += order_item.quantity
+
+            self._generate_items_for_item_children(
+                parent_item = inventory_item, 
+                quantity_of_parent_item = order_item.quantity, 
+                items_for_order = items_for_order
             )
 
-        return labels
+        return items_for_order
 
-    def generate_labels_for_children(self, inventory_item):
-        labels = []
-        for inventory_item_link in InventoryItemLink.objects.filter(
-            parent_inventory_item = inventory_item):
-            labels.extend(
-                self.generate_labels_for_quantity(
-                    inventory_item_link.child_inventory_item,
-                    inventory_item_link.num_child_inventory_items_required,
-                    inventory_item_link.relationship
-                )
-            )
-            labels.extend(
-                self.generate_labels_for_children(
-                    inventory_item_link.child_inventory_item
-                )
-            )
-        return labels
+    def _generate_items_for_item_children(self, parent_item, quantity_of_parent_item, items_for_order):
+        """
+        Helper for _generate_items_for_order that will recursively
+        add to the items_for_order dict for all child items, and their
+        child items, and so on.
+        """
+        for item_link in InventoryItemLink.objects.filter(
+            
+            parent_inventory_item = parent_item):
+            child_item = item_link.child_inventory_item
+            num_child_items = quantity_of_parent_item * item_link.num_child_inventory_items_required
+            relationship = item_link.relationship
 
-    def generate_labels_for_quantity(self, inventory_item, quantity, relationship):
-        labels = []
-        num_left = quantity
-        while num_left > 0:
-            label = Label(
-                inventory_item,
-                min(num_left, inventory_item.max_per_container),
-                relationship
+            if child_item not in items_for_order:
+                items_for_order[child_item] = {}
+            if relationship not in items_for_order[child_item]:
+                items_for_order[child_item][relationship] = num_child_items
+            else:
+                items_for_order[child_item][relationship] += num_child_items 
+
+            self._generate_items_for_item_children(
+                parent_item = child_item,
+                quantity_of_parent_item = num_child_items,
+                items_for_order = items_for_order
             )
-            labels.append(label)
-            num_left -= inventory_item.max_per_container
-        return labels
 
 
 class OrderItem(models.Model):

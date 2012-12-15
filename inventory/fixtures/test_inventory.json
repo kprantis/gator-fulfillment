@@ -1,0 +1,80 @@
+[
+    {
+        "pk": 1,
+        "model": "inventory.inventoryitem",
+        "fields": {
+            "name": "Concrete Anchor",
+            "max_per_container": 100,
+            "container_type": "Bag",
+            "image_url": "http://www.confast.com/images2/products/main/thunderstud-anchor.jpg",
+            "orderable": false,
+            "description": "3/8\" to 3 1/2\""
+        }
+    },
+    {
+        "pk": 2,
+        "model": "inventory.inventoryitem",
+        "fields": {
+            "name": "Post",
+            "max_per_container": 2,
+            "container_type": "Box",
+            "image_url": "http://wernerparts.com/images/medium/SSP-47_LRG.jpg",
+            "orderable": true,
+            "description": ""
+        }
+    },
+    {
+        "pk": 3,
+        "model": "inventory.inventoryitem",
+        "fields": {
+            "name": "Flat Washers",
+            "max_per_container": 100,
+            "container_type": "Bag",
+            "image_url": "http://www.comyea.com/en/UploadFile/2010_6_29_22975_18272.jpg",
+            "orderable": false,
+            "description": "5/16\""
+        }
+    },
+    {
+        "pk": 4,
+        "model": "inventory.inventoryitem",
+        "fields": {
+            "name": "Safety Screw",
+            "max_per_container": 100,
+            "container_type": "Bag",
+            "image_url": "http://wiki.diyfaq.org.uk/images/thumb/e/e0/Clutch_head_screws_2853-4.jpg/200px-Clutch_head_screws_2853-4.jpg",
+            "orderable": false,
+            "description": ""
+        }
+    },
+    {
+        "pk": 1,
+        "model": "inventory.inventoryitemlink",
+        "fields": {
+            "parent_inventory_item": 2,
+            "child_inventory_item": 1,
+            "num_child_inventory_items_required": 25,
+            "relationship": "Foot Assembly"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "inventory.inventoryitemlink",
+        "fields": {
+            "parent_inventory_item": 2,
+            "child_inventory_item": 3,
+            "num_child_inventory_items_required": 10,
+            "relationship": "Post / Foot Assembly"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "inventory.inventoryitemlink",
+        "fields": {
+            "parent_inventory_item": 3,
+            "child_inventory_item": 4,
+            "num_child_inventory_items_required": 5,
+            "relationship": "attaches something"
+        }
+    }
+]
