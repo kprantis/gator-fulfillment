@@ -19,7 +19,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     
     url(r'^orders/label/(?P<order_id>\d+)/$', 'orders.views.label'),
-    url(r'^orders/packaging_label/(?P<order_id>\d+)/$', 'orders.views.packaging_label')
+    url(r'^orders/packing_label/(?P<order_id>\d+)/$', 'orders.views.packing_label')
 )
 
 # urls for statis files
