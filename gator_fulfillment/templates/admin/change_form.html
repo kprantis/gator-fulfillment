@@ -66,7 +66,7 @@
 
 {% block submit_buttons_bottom %}
 {% if app_label == 'orders' and opts.module_name == 'order' and object_id %}
-    <input type='button' value='Save and Print Label' style="width: 100%; padding: 10px; font-size: 16px; font-style: bold; border: 1px solid;" onclick="window.open('{% url "orders.views.label" object_id %}', '_label'); document.getElementsByName('_continue')[0].click();"/>
+    <input type='button' value='Save and Open Printables' style="width: 100%; padding: 10px; font-size: 16px; font-style: bold; border: 1px solid;" onclick="window.open('{% url "orders.views.label" object_id %}', '_label'); window.open('{% url "orders.views.packaging_label" object_id %}', '_packaging_label'); document.getElementsByName('_continue')[0].click();"/>
 {% endif %}
 {% submit_row %}
 {% endblock %}

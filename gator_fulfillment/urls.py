@@ -18,7 +18,8 @@ urlpatterns = patterns('',
     url(r'^$', redirect_to, {'url': '/admin/', 'permanent': True}),
     url(r'^admin/', include(admin.site.urls)),
     
-    url(r'^orders/label/(?P<order_id>\d+)/$', 'orders.views.label')
+    url(r'^orders/label/(?P<order_id>\d+)/$', 'orders.views.label'),
+    url(r'^orders/packaging_label/(?P<order_id>\d+)/$', 'orders.views.packaging_label')
 )
 
 # urls for statis files

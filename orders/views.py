@@ -13,3 +13,14 @@ def label(request, order_id):
 
     context = {'labels' : labels}
     return render(request, 'orders/label.html', context)
+
+def packaging_label(request, order_id):
+    """
+    Create a printable sheet of labels for each of the items associated
+    with a order.
+    """
+    order = Order.objects.get(pk=order_id)
+    labels = order.generate_labels()
+
+    context = {'labels' : labels}
+    return render(request, 'orders/packaging_label.html', context)
