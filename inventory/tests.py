@@ -20,11 +20,13 @@ class InventoryModelTest(TestCase):
         parent_item = InventoryItem.objects.create(
             name = "Parent", 
             image_url = '',
+            max_per_container = 5,
             orderable = True
         )
         child_item = InventoryItem.objects.create(
             name="Child",
             image_url='',
+            max_per_container = 5,
             orderable = False
         )
         self.assertEqual(2, len(InventoryItem.objects.all()))
