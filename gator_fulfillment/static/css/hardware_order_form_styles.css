@@ -1,5 +1,5 @@
 #content {
-    width: 100%;
+    width: 700px;
 }
 
 .order_title {
@@ -13,12 +13,16 @@ table {
 }
 
 td {
-    width: 300px;
+    width: 125px;
     padding: 5px;
 }
 
 table, td {
     border: 1px solid black;
+}
+
+td.item {
+    width: 400px;
 }
 
 .table_header {
