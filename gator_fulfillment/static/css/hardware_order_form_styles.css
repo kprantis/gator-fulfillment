@@ -1,0 +1,35 @@
+#content {
+    width: 100%;
+}
+
+.order_title {
+    text-align: center;
+}
+
+table {
+    font-size: 18px;
+    margin-bottom: 30px;
+    border-collapse:collapse;
+}
+
+td {
+    width: 300px;
+    padding: 5px;
+}
+
+table, td {
+    border: 1px solid black;
+}
+
+.table_header {
+    font-weight: bold;
+}
+
+.orderable_item {
+    color: green;
+    font-weight: bold;
+}
+
+h4 {
+    margin-bottom: 5px;
+}

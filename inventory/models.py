@@ -17,10 +17,12 @@ class InventoryItem(models.Model):
     """
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
+    item_number = models.CharField(max_length=200, blank=True)
     image_url = models.URLField(blank=True)
     container_type = models.CharField(max_length=200)
     max_per_container = models.IntegerField()
     orderable = models.BooleanField()
+    preassembled = models.BooleanField()
     required_items = models.ManyToManyField(
         "self",
         through = 'InventoryItemLink',
@@ -73,3 +75,14 @@ class Label(object):
             inventory_item.container_type,
             quantity
         )
+
+class HardwareOrderFormItem(object):
+    """
+    Container for the data for an item on the hardware order form.
+    """
+    def __init__(self, inventory_item, quantity):
+        self.name = inventory_item.name
+        self.description = inventory_item.description
+        self.item_number = inventory_item.item_number
+        self.orderable = inventory_item.orderable
+        self.quantity = quantity

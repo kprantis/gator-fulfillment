@@ -8,6 +8,7 @@
             "container_type": "Bag",
             "image_url": "http://www.confast.com/images2/products/main/thunderstud-anchor.jpg",
             "orderable": false,
+            "preassembled": false,
             "description": "3/8\" to 3 1/2\""
         }
     },
@@ -20,6 +21,7 @@
             "container_type": "Box",
             "image_url": "http://wernerparts.com/images/medium/SSP-47_LRG.jpg",
             "orderable": true,
+            "preassembled": false,
             "description": ""
         }
     },
@@ -32,6 +34,7 @@
             "container_type": "Bag",
             "image_url": "http://www.comyea.com/en/UploadFile/2010_6_29_22975_18272.jpg",
             "orderable": false,
+            "preassembled": true,
             "description": "5/16\""
         }
     },
@@ -44,6 +47,7 @@
             "container_type": "Bag",
             "image_url": "http://wiki.diyfaq.org.uk/images/thumb/e/e0/Clutch_head_screws_2853-4.jpg/200px-Clutch_head_screws_2853-4.jpg",
             "orderable": false,
+            "preassembled": false,
             "description": ""
         }
     },

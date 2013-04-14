@@ -66,6 +66,7 @@
 
 {% block submit_buttons_bottom %}
 {% if app_label == 'orders' and opts.module_name == 'order' and object_id %}
+    <input type='button' value='Open Hardware Order Form' style="width: 100%; padding: 10px; font-size: 16px; font-style: bold; border: 1px solid;" onclick="window.open('{% url "orders.views.hardware_order_form" object_id %}', '_hardware_order_form'); document.getElementsByName('_continue')[0].click();"/>
     <input type='button' value='Open Shipping Labels' style="width: 100%; padding: 10px; font-size: 16px; font-style: bold; border: 1px solid;" onclick="window.open('{% url "orders.views.label" object_id %}', '_label'); document.getElementsByName('_continue')[0].click();"/>
     <input type='button' value='Open Packing Labels' style="width: 100%; padding: 10px; font-size: 16px; font-style: bold; border: 1px solid;" onclick="window.open('{% url "orders.views.packing_label" object_id %}', '_packing_label'); document.getElementsByName('_continue')[0].click();"/>
 {% endif %}

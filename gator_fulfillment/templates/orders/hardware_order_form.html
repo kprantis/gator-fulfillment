@@ -1,0 +1,44 @@
+{% extends "orders/base.html" %}
+
+{% block css %}
+{{ block.super }}
+<link rel="stylesheet" href="{{ STATIC_URL }}css/hardware_order_form_styles.css" /> 
+{% endblock %}
+
+{% block content %}
+<h2 class="order_title">Master Order Form: {{ order.description }}</h2>
+
+<h4>Orderable parts:</h4>
+<table>
+<tr class="table_header">
+    <td>Name</td>
+    <td>Quantity</td>
+</tr>
+{% for item in hardware_order_form_items %}
+    <tr>
+    {% if item.orderable %}
+        <td class="item orderable_item">{{ item.name }}{% if item.description %}, {{ item.description }}{% endif %}</td>
+        <td>{{ item.quantity }}</td>
+    {% endif %}
+    </tr>
+{% endfor %}
+</table>
+
+<h4>Components:</h4>
+<table>
+<tr class="table_header">
+    <td>Name</td>
+    <td>Item Number</td>
+    <td>Quantity</td>
+</tr>
+{% for item in hardware_order_form_items %}
+    <tr>
+    {% if not item.orderable %}
+        <td class="item">{{ item.name }}{% if item.description %}, {{ item.description }}{% endif %}</td>
+        <td>{% if item.item_number %}{{ item.item_number }}{% endif %}</td>
+        <td>{{ item.quantity }}</td>
+    {% endif %}
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}

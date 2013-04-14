@@ -1,6 +1,8 @@
+from operator import attrgetter
+
 from django.db import models
 
-from inventory.models import Label, InventoryItemLink
+from inventory.models import Label, InventoryItemLink, HardwareOrderFormItem
 
 class Order(models.Model):
     description = models.CharField(max_length=200)
@@ -8,12 +10,30 @@ class Order(models.Model):
     def __unicode__(self):
         return self.description
 
+    def generate_hardware_order_form_items(self):
+        """
+        Generates a alpabetically sorted list of items required 
+        for this order, including all child items.
+        """
+        items_for_order = self._generate_items_for_order(exclude_preassembled_parts = False)
+        items = []
+        for item, relationship_to_quantity_mapping in items_for_order.iteritems():
+            total_num_of_item = 0
+            for relationship, quantity in relationship_to_quantity_mapping.iteritems():
+                total_num_of_item += quantity
+            items.append(HardwareOrderFormItem(item, total_num_of_item))
+
+        items = sorted(items, key=attrgetter('name'))
+        items = sorted(items, key=lambda i: not i.orderable)
+        return items
+
     def generate_labels(self):
         """
         Generates a alpabetically sorted list of labels for each item
-        that is required for this order, including all child items.
+        that is shipping for this order, including all child items
+        EXCEPT for those preassembled in the shop.
         """
-        items_for_order = self._generate_items_for_order()
+        items_for_order = self._generate_items_for_order(exclude_preassembled_parts = True)
         labels = []
         for item, relationship_to_quantity_mapping in items_for_order.iteritems():
             for relationship, quantity in relationship_to_quantity_mapping.iteritems():
@@ -22,10 +42,10 @@ class Order(models.Model):
                     labels.append(Label(item, relationship, label_quantity))
                     quantity -= label_quantity
 
-        labels = sorted(labels, key=lambda label: label.name)
+        labels = sorted(labels, key=attrgetter('name'))
         return labels
         
-    def _generate_items_for_order(self):
+    def _generate_items_for_order(self, exclude_preassembled_parts):
         """
         Will generate a dict with totals of all items required for the
         order, refined by the relationship. The resulting dict format is:
@@ -51,15 +71,17 @@ class Order(models.Model):
             else:
                 items_for_order[inventory_item][''] += order_item.quantity
 
-            self._generate_items_for_item_children(
-                parent_item = inventory_item, 
-                quantity_of_parent_item = order_item.quantity, 
-                items_for_order = items_for_order
-            )
+            if (not exclude_preassembled_parts) or (not inventory_item.preassembled):
+                self._generate_items_for_item_children(
+                    parent_item = inventory_item, 
+                    quantity_of_parent_item = order_item.quantity, 
+                    items_for_order = items_for_order,
+                    exclude_preassembled_parts = exclude_preassembled_parts
+                )
 
         return items_for_order
 
-    def _generate_items_for_item_children(self, parent_item, quantity_of_parent_item, items_for_order):
+    def _generate_items_for_item_children(self, parent_item, quantity_of_parent_item, items_for_order, exclude_preassembled_parts):
         """
         Helper for _generate_items_for_order that will recursively
         add to the items_for_order dict for all child items, and their
@@ -79,11 +101,13 @@ class Order(models.Model):
             else:
                 items_for_order[child_item][relationship] += num_child_items 
 
-            self._generate_items_for_item_children(
-                parent_item = child_item,
-                quantity_of_parent_item = num_child_items,
-                items_for_order = items_for_order
-            )
+            if (not exclude_preassembled_parts) or (not child_item.preassembled):
+                self._generate_items_for_item_children(
+                    parent_item = child_item,
+                    quantity_of_parent_item = num_child_items,
+                    items_for_order = items_for_order,
+                    exclude_preassembled_parts = exclude_preassembled_parts
+                )
 
 
 class OrderItem(models.Model):
