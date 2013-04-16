@@ -24,6 +24,7 @@ class Order(models.Model):
             items.append(HardwareOrderFormItem(item, total_num_of_item))
 
         items = sorted(items, key=attrgetter('name'))
+        items = sorted(items, key=lambda i: bool(i.item_number))
         items = sorted(items, key=lambda i: not i.orderable)
         return items
 
