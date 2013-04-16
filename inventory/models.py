@@ -30,7 +30,7 @@ class InventoryItem(models.Model):
     )
 
     def __unicode__(self):
-        return "%s%s" % (
+        return u"%s%s" % (
             self.name, 
             " (%s)" % self.description if self.description else ''
         )
@@ -53,7 +53,7 @@ class InventoryItemLink(models.Model):
     relationship = models.CharField(max_length=200, blank=True, verbose_name="Part relationship")
 
     def __unicode__(self):
-        return "A %s requires %s %s%s for the %s" % (
+        return u"A %s requires %s %s%s for the %s" % (
             self.parent_inventory_item,
             self.num_child_inventory_items_required,
             self.child_inventory_item,
