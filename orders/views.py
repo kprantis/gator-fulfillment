@@ -12,9 +12,14 @@ import urllib2
 from orders.models import Order
 
 
-def generate_labels_pdf(order_id, labels, label_color):
+class LabelTypes(object):
+    LABEL_TYPE_SHIPPING = 'shipping'
+    LABEL_TYPE_PACKING = 'packing'
+
+
+def generate_labels_pdf(order_id, labels, label_type):
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="%s_shipping_labels.pdf"' % order_id
+    response['Content-Disposition'] = 'attachment; filename="labels_%s_order_%s.pdf"' % (label_type, order_id)
 
     canv = canvas.Canvas(response, pagesize=LETTER )
     canv.setPageCompression( 0 )
@@ -49,7 +54,12 @@ def generate_labels_pdf(order_id, labels, label_color):
         #canv.rect( x, y, LABELW, -LABELH )
         y_diff = 19
         tx = canv.beginText( x+2, y-y_diff )
-        tx.setFillColor(label_color)
+        if label_type == LabelTypes.LABEL_TYPE_SHIPPING:
+            tx.setFillColor("green")
+        elif label_type == LabelTypes.LABEL_TYPE_PACKING:
+            tx.setFillColor("blue")
+        else:
+            raise RuntimeError("Unrecognized label type: '%s'" % label_type)
         tx.setFont( 'Times-Bold', 14, 14 )
         y_diff += printLines(tx, 14, [label.name]) + 11
         tx = canv.beginText( x+2, y-y_diff )
@@ -84,7 +94,7 @@ def label(request, order_id):
     order = Order.objects.get(pk=order_id)
     labels = order.generate_labels()
 
-    return generate_labels_pdf(order_id, labels, "green") 
+    return generate_labels_pdf(order_id, labels, LabelTypes.LABEL_TYPE_SHIPPING) 
 
 def packing_label(request, order_id):
     """
@@ -94,7 +104,7 @@ def packing_label(request, order_id):
     order = Order.objects.get(pk=order_id)
     labels = order.generate_labels()
 
-    return generate_labels_pdf(order_id, labels, "blue")
+    return generate_labels_pdf(order_id, labels, LabelTypes.LABEL_TYPE_PACKING)
 
 def hardware_order_form(request, order_id):
     """
