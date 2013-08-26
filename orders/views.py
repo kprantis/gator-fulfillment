@@ -59,12 +59,13 @@ def generate_labels_pdf(order_id, labels, label_color):
         tx = canv.beginText( x+2, y-y_diff )
         tx.setFont( 'Times-Bold', 14, 14 )
         printLines(tx, 14, [label.quantity])
-        image_name = label.image_url.rsplit('/', 1)[-1]
-        if not os.path.exists(image_name):
-            f = open(image_name, 'w')
-            f.write(urllib2.urlopen(label.image_url).read())
-            f.close()
-        canv.drawImage(image_name, x+LABELW-71, y-71, 70, 70)
+        if label.image_url:
+            image_name = label.image_url.rsplit('/', 1)[-1]
+            if not os.path.exists(image_name):
+                f = open(image_name, 'w')
+                f.write(urllib2.urlopen(label.image_url).read())
+                f.close()
+            canv.drawImage(image_name, x+LABELW-71, y-71, 70, 70)
         if label_num > 1 and label_num % 30 == 0:
             canv.showPage()
             row_num = -1
