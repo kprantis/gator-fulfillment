@@ -1,7 +1,79 @@
+from django.http import HttpResponse
 from django.shortcuts import render
+import os
 from django.template import Context, loader
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import LETTER
+from reportlab.lib.units import inch
+from StringIO import StringIO 
+import textwrap
+import urllib2
 
 from orders.models import Order
+
+
+def generate_labels_pdf(order_id, labels, label_color):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="%s_shipping_labels.pdf"' % order_id
+
+    canv = canvas.Canvas(response, pagesize=LETTER )
+    canv.setPageCompression( 0 )
+
+    # Spacing in points, bottom left = 0, 0
+    # top right = 612, 792
+
+    LABELW = 2.625 * inch
+    LABELSEP = 2.75 * inch
+    LABELH = 1 * inch
+
+    def LabelPosition(ordinal):
+        y,x = divmod(ordinal, 3)
+        x = 14 + x * LABELSEP
+        y = 756 - y * LABELH
+        return x, y
+
+    def printLines(tx, font_size, lines):
+        num_chars_in_line = 250/font_size
+        print_lines = []
+        for line in lines:
+            print_lines.extend(textwrap.wrap(line, num_chars_in_line) or [''])
+        assert print_lines
+        tx.textLines(print_lines)
+        canv.drawText(tx)
+        return (len(print_lines) - 1) * font_size
+
+    row_num = 0
+    label_num = 1
+    for label in labels:
+        x, y = LabelPosition( row_num )
+        #canv.rect( x, y, LABELW, -LABELH )
+        y_diff = 19
+        tx = canv.beginText( x+2, y-y_diff )
+        tx.setFillColor(label_color)
+        tx.setFont( 'Times-Bold', 14, 14 )
+        y_diff += printLines(tx, 14, [label.name]) + 11
+        tx = canv.beginText( x+2, y-y_diff )
+        tx.setFillColor('black')
+        tx.setFont( 'Times-Roman', 11, 11 )
+        y_diff += printLines(tx, 11, [label.description, label.relationship]) + 14
+        tx = canv.beginText( x+2, y-y_diff )
+        tx.setFont( 'Times-Bold', 14, 14 )
+        printLines(tx, 14, [label.quantity])
+        image_name = label.image_url.rsplit('/', 1)[-1]
+        if not os.path.exists(image_name):
+            f = open(image_name, 'w')
+            f.write(urllib2.urlopen(label.image_url).read())
+            f.close()
+        canv.drawImage(image_name, x+LABELW-71, y-71, 70, 70)
+        if label_num > 1 and label_num % 30 == 0:
+            canv.showPage()
+            row_num = -1
+        label_num += 1
+        row_num +=1
+
+    # Close the PDF object cleanly, and we're done.
+    canv.save()
+    return response
 
 def label(request, order_id):
     """
@@ -11,8 +83,7 @@ def label(request, order_id):
     order = Order.objects.get(pk=order_id)
     labels = order.generate_labels()
 
-    context = {'labels' : labels}
-    return render(request, 'orders/label.html', context)
+    return generate_labels_pdf(order_id, labels, "green") 
 
 def packing_label(request, order_id):
     """
@@ -22,8 +93,7 @@ def packing_label(request, order_id):
     order = Order.objects.get(pk=order_id)
     labels = order.generate_labels()
 
-    context = {'labels' : labels}
-    return render(request, 'orders/packing_label.html', context)
+    return generate_labels_pdf(order_id, labels, "blue")
 
 def hardware_order_form(request, order_id):
     """
