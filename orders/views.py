@@ -1,15 +1,29 @@
+import logging
+import os
+import sys
+import textwrap
+import traceback
+import urllib2
+
 from django.http import HttpResponse
 from django.shortcuts import render
-import os
 from django.template import Context, loader
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.units import inch
 from StringIO import StringIO 
-import textwrap
-import urllib2
 
 from orders.models import Order
+
+
+logger = logging.getLogger('orders')
+logger.setLevel(logging.ERROR)
+stdout_handler = logging.StreamHandler(sys.stderr)
+file_handler = logging.FileHandler("orders.log")
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(stdout_handler)
 
 
 class LabelTypes(object):
@@ -30,6 +44,7 @@ def generate_labels_pdf(order_id, labels, label_type):
     LABELW = 2.625 * inch
     LABELSEP = 2.75 * inch
     LABELH = 1 * inch
+    BASE_Y_DIFF = 19
 
     def LabelPosition(ordinal):
         y,x = divmod(ordinal, 3)
@@ -52,8 +67,8 @@ def generate_labels_pdf(order_id, labels, label_type):
     for label in labels:
         x, y = LabelPosition( row_num )
         #canv.rect( x, y, LABELW, -LABELH )
-        y_diff = 19
-        tx = canv.beginText( x+2, y-y_diff )
+        current_y_diff = BASE_Y_DIFF
+        tx = canv.beginText( x+2, y-current_y_diff )
         if label_type == LabelTypes.LABEL_TYPE_SHIPPING:
             tx.setFillColor("green")
         elif label_type == LabelTypes.LABEL_TYPE_PACKING:
@@ -61,21 +76,42 @@ def generate_labels_pdf(order_id, labels, label_type):
         else:
             raise RuntimeError("Unrecognized label type: '%s'" % label_type)
         tx.setFont( 'Times-Bold', 14, 14 )
-        y_diff += printLines(tx, 14, [label.name]) + 11
-        tx = canv.beginText( x+2, y-y_diff )
+        current_y_diff += printLines(tx, 14, [label.name]) + 11
+        tx = canv.beginText( x+2, y-current_y_diff )
         tx.setFillColor('black')
         tx.setFont( 'Times-Roman', 11, 11 )
-        y_diff += printLines(tx, 11, [label.description, label.relationship]) + 14
-        tx = canv.beginText( x+2, y-y_diff )
+        current_y_diff += printLines(tx, 11, [label.description, label.relationship]) + 14
+        tx = canv.beginText( x+2, y-current_y_diff )
         tx.setFont( 'Times-Bold', 14, 14 )
         printLines(tx, 14, [label.quantity])
+
+        current_y_diff = BASE_Y_DIFF  # moving to a new column
         if label.image_url:
             image_name = label.image_url.rsplit('/', 1)[-1]
-            if not os.path.exists(image_name):
-                f = open(image_name, 'w')
-                f.write(urllib2.urlopen(label.image_url).read())
-                f.close()
-            canv.drawImage(image_name, x+LABELW-71, y-71, 70, 70)
+            try:
+                if not os.path.exists(image_name):
+                    opener = urllib2.OpenerDirector()
+                    opener.add_handler(urllib2.HTTPHandler())
+                    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+                    img = opener.open(label.image_url)
+                    f = open(image_name, 'w')
+                    f.write(img.read())
+                    f.close()
+                canv.drawImage(image_name, x+LABELW-71, y-71, 70, 70)
+            except Exception, e:
+                # Don't want to disrupt the whole page if one image has a problem, so
+                # we just log the error and display that there was an error for that img.
+                exception_type, value, trace = sys.exc_info()
+                logger.error('\n'.join(traceback.format_exception(exception_type, value, trace)))
+                tx = canv.beginText(x+LABELW-71, y-current_y_diff)
+                printLines(tx, 14, ["ERROR", "Loading", "Image"])
+                try:
+                    # Remove img in case it is corrupt so it will be
+                    # re-fetched next time.
+                    os.remove(image_name)
+                except Exception, e:
+                    exception_type, value, trace = sys.exc_info()
+                    logger.error('\n'.join(traceback.format_exception(exception_type, value, trace)))
         if label_num > 1 and label_num % 30 == 0:
             canv.showPage()
             row_num = -1
