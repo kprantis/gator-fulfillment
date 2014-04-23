@@ -90,12 +90,8 @@ def generate_labels_pdf(order_id, labels, label_type):
             image_name = label.image_url.rsplit('/', 1)[-1]
             try:
                 if not os.path.exists(image_name):
-                    opener = urllib2.OpenerDirector()
-                    opener.add_handler(urllib2.HTTPHandler())
-                    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
-                    img = opener.open(label.image_url)
                     f = open(image_name, 'w')
-                    f.write(img.read())
+                    f.write(urllib2.urlopen(label.image_url).read())
                     f.close()
                 canv.drawImage(image_name, x+LABELW-71, y-71, 70, 70)
             except Exception, e:
